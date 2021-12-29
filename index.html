@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="car.js"></script>
+    <script src="obstacle.js"></script>
+    <script src="gold.js"></script>
+</head>
+<body>
+<canvas height="768" id="myCanvas" style="background: lightyellow; border: solid 1px" width="1300"></canvas>
+<script>
+    let canvas = document.getElementById("myCanvas");
+    let ctx = canvas.getContext('2d');
+    let myCar = new Car(250, 650, 100, 100, 30, 'img/car1.png');
+    let obstacle = new Obstacle(Math.random() * 1300, 10, 50, 50, 'img/bomb.png', 2);
+    let obstacle1 = new Obstacle(Math.random() * 1200, Math.random() * 750, 50, 50, 'img/bomb.png');
+    let gold = new Gold(Math.random() * 1200, Math.random() * 750, 50, 50, 'img/dollar-coin.png')
+    let intervalId = -1;
+    let score = 0;
+    myCar.drawCar(ctx);
+    obstacle.drawObstacle(ctx);
+    obstacle1.drawObstacle(ctx);
+    gold.drawGold(ctx);
+
+    function moveCar(event) {
+        switch (event.keyCode) {
+            case 37: {
+                myCar.src = 'img/car1.png'
+                if (myCar._x < 11) {
+                    return;
+                }
+                myCar.moveLeft();
+                break;
+            }
+            case 39: {
+                myCar.src = 'img/car3.png'
+                if (myCar._x + myCar._width > canvas.clientWidth) {
+                    return;
+                }
+                myCar.moveRight();
+                break
+            }
+            case 38: {
+                myCar.src = 'img/car2.png'
+                if (myCar._y < 0) {
+                    return;
+                }
+                myCar.moveUp();
+                break;
+            }
+            case 40: {
+                myCar.src = 'img/car4.png'
+                if (myCar._y + myCar._height > canvas.clientHeight) {
+                    return;
+                }
+                myCar.moveDown();
+                break;
+            }
+            case 32: {
+                myCar.upSpeed();
+                break;
+            }
+        }
+        moveGold();
+        updateCanvas();
+    }
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, 1300, 768);
+    }
+
+    function moveObstacle() {
+        obstacle.moveDown();
+        updateCanvas();
+        if (obstacle._y > canvas.clientHeight) {
+            obstacle._y = 0;
+            obstacle._x = Math.random() * 700;
+        }
+        if (obstacle1._y > canvas.clientHeight) {
+            obstacle1._y = 0;
+            obstacle1._x = Math.random() * 700;
+        }
+        if (checkCollision()) {
+            alert("thua")
+            cancelAnimationFrame(intervalId);
+        } else {
+            intervalId = requestAnimationFrame(moveObstacle)
+        }
+    }
+
+    function checkCollision() {
+        if (obstacle._y < myCar._y + myCar._height && obstacle._y + obstacle._height > myCar._y && obstacle._x + obstacle._width > myCar._x && obstacle._x < myCar._x + myCar._width) {
+            return true;
+        }
+        if (obstacle1._y < myCar._y + myCar._height && obstacle1._y + obstacle1._height > myCar._y && obstacle1._x + obstacle1._width > myCar._x && obstacle1._x < myCar._x + myCar._width) {
+            return true;
+        }
+    }
+
+    function moveGold() {
+        updateCanvas()
+        if (gold.y < myCar._y + myCar._height && gold.y + gold.height > myCar._y && gold.x < myCar._x + myCar._width && gold.x + gold.width > myCar._width) {
+            gold.y = Math.random() * 700;
+            gold.x = Math.random() * 1200;
+            score++;
+        }
+    }
+
+    function drawScore() {
+        ctx.fillStyle = "blue";
+        ctx.font = "bold 35px Arial";
+        ctx.fillText("Score:" + score, 10, 40);
+    }
+
+    function updateCanvas() {
+        clearCanvas();
+        drawScore();
+        obstacle.drawObstacle(ctx);
+        obstacle1.drawObstacle(ctx);
+        myCar.drawCar(ctx);
+        gold.drawGold(ctx);
+    }
+
+
+    moveObstacle();
+    document.addEventListener('keydown', moveCar);
+</script>
+</body>
+</html>
